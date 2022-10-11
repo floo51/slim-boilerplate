@@ -45,4 +45,3 @@ $container->set(UserController::class, static function (Container $container) {
 });
 
 return $container;
-
