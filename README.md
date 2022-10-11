@@ -19,3 +19,12 @@ composer update
 ```
 
 4. slim app runs on http://localhost:8080
+
+
+
+
+
+
+
+php vendor/bin/doctrine make:migration
+docker-compose up --build 
