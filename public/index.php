@@ -21,6 +21,6 @@ $app->get('/', function (Request $request, Response $response, $args) {
     return $response;
 });
 
-$app->get('/users', \UserController::class . ':test');
+$app->get('/users', \App\UserController::class . ':test');
 
 $app->run();
