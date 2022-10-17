@@ -9,13 +9,26 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use UMA\DIC\Container;
-use Slim\Views\Twig;
-use App\UserController;
 use App\UserService;
+use App\UserController;
+use Monolog\Level;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+use Psr\Log\LoggerInterface;
+use Slim\Views\Twig;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
+
 $container = new Container(require __DIR__ . '/settings.php');
+
+
+$container->set(LoggerInterface::class, function (ContainerInterface $c) {
+    $settings = $c->get('settings')['logger'];
+    $logger = new Logger($settings['name']);
+    $logger->pushHandler(new StreamHandler($settings['path'], Level::Debug));
+    return $logger;
+});
 
 $container->set(EntityManager::class, static function (Container $c): EntityManager {
     /** @var array $settings */
@@ -37,7 +50,6 @@ $container->set(EntityManager::class, static function (Container $c): EntityMana
     return EntityManager::create($settings['doctrine']['connection'], $config);
 });
 
-
 $container->set('view', function () {
     return Twig::create(
         __DIR__ . '/templates',
@@ -45,9 +57,8 @@ $container->set('view', function () {
     );
 });
 
-
 $container->set(UserService::class, static function (Container $c) {
-    return new UserService($c->get(EntityManager::class));
+    return new UserService($c->get(EntityManager::class), $c->get(LoggerInterface::class));
 });
 
 $container->set(UserController::class, static function (ContainerInterface $container) {
